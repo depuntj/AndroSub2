@@ -8,23 +8,20 @@ import androidx.lifecycle.viewModelScope
 import com.example.androsubmis2.models.EventModel
 import com.example.androsubmis2.models.DetailResponse
 import com.example.androsubmis2.models.ListResponse
-import com.example.androsubmis2.service.RetrofitInstance
+import com.example.androsubmis2.service.EventRepository
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import retrofit2.Response
 
-class ViewEventModel : ViewModel() {
-
-    private val eventService = RetrofitInstance.eventService
+class ViewEventModel(
+    private val repository: EventRepository
+) : ViewModel() {
 
     private val _activeEventsLiveData = MutableLiveData<List<EventModel>>()
     val activeEventsLiveData: LiveData<List<EventModel>> get() = _activeEventsLiveData
 
     private val _completedEventsLiveData = MutableLiveData<List<EventModel>>()
     val completedEventsLiveData: LiveData<List<EventModel>> get() = _completedEventsLiveData
-
-    private val _searchResultsLiveData = MutableLiveData<List<EventModel>>()
-    val searchResultsLiveData: LiveData<List<EventModel>> get() = _searchResultsLiveData
 
     private val _eventDetailLiveData = MutableLiveData<EventModel?>()
     val eventDetailLiveData: LiveData<EventModel?> get() = _eventDetailLiveData
@@ -35,7 +32,7 @@ class ViewEventModel : ViewModel() {
     fun fetchActiveEvents() {
         viewModelScope.launch {
             try {
-                val response: Response<ListResponse> = eventService.getActiveEvents()
+                val response: Response<ListResponse> = repository.getActiveEvents()
                 if (response.isSuccessful && response.body()?.listEvents != null) {
                     _activeEventsLiveData.value = response.body()?.listEvents?.filterNotNull()
                     Log.d("ViewEventModel", "Active events fetched: ${response.body()?.listEvents?.size} events")
@@ -56,7 +53,7 @@ class ViewEventModel : ViewModel() {
     fun fetchCompletedEvents() {
         viewModelScope.launch {
             try {
-                val response: Response<ListResponse> = eventService.getCompletedEvents()
+                val response: Response<ListResponse> = repository.getCompletedEvents()
                 if (response.isSuccessful && response.body()?.listEvents != null) {
                     _completedEventsLiveData.value = response.body()?.listEvents?.filterNotNull()
                     Log.d("ViewEventModel", "Completed events fetched: ${response.body()?.listEvents?.size} events")
@@ -74,32 +71,12 @@ class ViewEventModel : ViewModel() {
         }
     }
 
-    fun searchEvents(keyword: String, isActive: Boolean) {
-        viewModelScope.launch {
-            try {
-                val activeStatus = if (isActive) 1 else 0
-                val response: Response<ListResponse> = eventService.searchEvents(active = activeStatus, keyword = keyword)
 
-                if (response.isSuccessful && response.body()?.listEvents != null) {
-                    val events = response.body()?.listEvents?.filterNotNull() ?: emptyList()
-                    _searchResultsLiveData.value = events.ifEmpty {
-                        emptyList()
-                    }
-                } else {
-                    _errorMessageLiveData.value = response.body()?.message ?: "No events found."
-                }
-            } catch (e: HttpException) {
-                _errorMessageLiveData.value = "Failed to search events: ${e.message()}"
-            } catch (e: Exception) {
-                _errorMessageLiveData.value = e.message ?: "An unknown error occurred"
-            }
-        }
-    }
 
     fun fetchEventDetail(eventId: Int) {
         viewModelScope.launch {
             try {
-                val response: Response<DetailResponse> = eventService.getEventDetails(eventId)
+                val response: Response<DetailResponse> = repository.getEventDetails(eventId)
                 if (response.isSuccessful && response.body()?.event != null) {
                     _eventDetailLiveData.value = response.body()?.event
                     Log.d("ViewEventModel", "Event details fetched: ${response.body()?.event?.name}")

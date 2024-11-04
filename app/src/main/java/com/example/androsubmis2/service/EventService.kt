@@ -1,6 +1,7 @@
 package com.example.androsubmis2.service
 
 import com.example.androsubmis2.models.DetailResponse
+import com.example.androsubmis2.models.EventModel
 import com.example.androsubmis2.models.ListResponse
 import retrofit2.Response
 import retrofit2.http.GET
@@ -29,4 +30,10 @@ interface EventService {
     suspend fun getEventDetails(
         @Path("id") eventId: Int
     ): Response<DetailResponse>
+
+    @GET("events")
+    suspend fun getNearestActiveEvent(
+        @Query("active") active: Int = 1,
+        @Query("limit") limit: Int = 1
+    ): List<EventModel>
 }

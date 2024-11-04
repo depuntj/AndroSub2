@@ -7,7 +7,7 @@
     android:layout_margin="16dp"
     app:cardCornerRadius="16dp"
     app:cardElevation="8dp"
-    app:cardBackgroundColor="@color/white">
+    app:cardBackgroundColor="@color/card_background_color">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -18,6 +18,7 @@
             android:layout_height="wrap_content"
             android:padding="16dp">
 
+            <!-- Event Image -->
             <ImageView
                 android:id="@+id/detail_event_image"
                 android:layout_width="0dp"
@@ -27,63 +28,68 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:contentDescription="@string/event_image_desc"
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginBottom="16dp" />
 
+            <!-- Event Name -->
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/detail_event_name"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"
+                android:textColor="@color/textColorPrimary"
                 app:layout_constraintTop_toBottomOf="@+id/detail_event_image"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:paddingBottom="8dp"
                 android:text="@string/event_title" />
 
+            <!-- Event Organizer -->
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/detail_event_owner"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
-                android:textColor="@color/gray"
+                android:textColor="@color/text_color"
                 app:layout_constraintTop_toBottomOf="@+id/detail_event_name"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:gravity="center_vertical"
                 android:text="@string/event_organizer" />
 
+            <!-- Event Time -->
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/detail_event_time"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
-                android:textColor="@color/black"
+                android:textColor="@color/textColorPrimary"
                 app:layout_constraintTop_toBottomOf="@+id/detail_event_owner"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:gravity="center_vertical"
                 android:text="@string/event_time" />
 
+            <!-- Event Quota -->
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/detail_event_quota"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
-                android:textColor="@color/black"
+                android:textColor="@color/textColorPrimary"
                 app:layout_constraintTop_toBottomOf="@+id/detail_event_time"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 android:gravity="center_vertical"
                 android:text="@string/event_quota" />
 
+            <!-- Event Description -->
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/detail_event_description"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:textSize="14sp"
-                android:textColor="@color/black"
+                android:textColor="@color/text_color"
                 app:layout_constraintTop_toBottomOf="@+id/detail_event_quota"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -91,6 +97,7 @@
                 android:paddingTop="16dp"
                 android:text="@string/event_description" />
 
+            <!-- Open Link Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_open_link"
                 android:layout_width="wrap_content"
@@ -101,10 +108,23 @@
                 app:layout_constraintTop_toBottomOf="@+id/detail_event_description"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                android:layout_marginTop="24dp"/>
+                android:layout_marginTop="24dp" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
+    <!-- Floating Action Button for Favorite -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_favorite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/add_favorite"
+        app:srcCompat="@drawable/ic_favorite_border"
+        app:backgroundTint="@color/favorite_icon_color"
+        android:tint="@color/textColorPrimary" />
+
+    <!-- ProgressBar for Loading -->
     <ProgressBar
         android:id="@+id/loading_indicator"
         android:layout_width="48dp"
@@ -115,4 +135,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
 </com.google.android.material.card.MaterialCardView>

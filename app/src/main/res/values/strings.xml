@@ -7,6 +7,7 @@
     <string name="event_description">Event Description</string>
     <string name="open_event_link">Open Event Link</string>
     <string name="event_image_desc">Event Image</string>
+    <string name="add_favorite">Add to Favorite</string>
 
     <string name="nav_home">Home</string>
     <string name="nav_active_events">Active Events</string>
@@ -17,15 +18,28 @@
 
     <string name="active_events">Active Events</string>
     <string name="completed_events">Completed Events</string>
-    <string name="failed_to_load_data">Failed to load data</string>
+
+    <string name="added_to_favorites">Added to Favorites</string>
+    <string name="removed_from_favorites">Removed from Favorites</string>
 
     <string name="search_something">Search Something</string>
     <string name="search">Search</string>
+
+    <string name="setting">SETTING</string>
+    <string name="enabledarkmode">Enable dark mode</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="notification">Notification</string>
+    <string name="enablenotification">Enable notification</string>">
 
     <string name="no_past_events">No past events available</string>
     <string name="event_not_found">Event not found</string>
     <string name="event_quota_placeholder">%1$d spots left</string>
     <string name="event_link_not_available">Event link not available</string>
+    <string name="no_favorites">No favorites available</string>
 
+
+    <string name="unknown_event">Unknown Event</string>
+    <string name="unknown_owner">Unknown Organizer</string>
+    <string name="unknown_time">Unknown Time</string>
 
 </resources>

@@ -25,7 +25,7 @@
                 android:text="@string/active_events"
                 android:textStyle="bold"
                 android:textSize="18sp"
-                android:textColor="@color/black"
+                android:textColor="?android:textColorPrimary"
                 android:padding="16dp"/>
 
             <!-- Loading Indicator for Active Events -->
@@ -54,7 +54,7 @@
                 android:text="@string/completed_events"
                 android:textStyle="bold"
                 android:textSize="18sp"
-                android:textColor="@color/black"
+                android:textColor="?android:textColorPrimary"
                 android:padding="16dp"/>
 
             <!-- Loading Indicator for Completed Events -->

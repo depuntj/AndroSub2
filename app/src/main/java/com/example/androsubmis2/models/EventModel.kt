@@ -14,5 +14,6 @@ data class EventModel(
     val id: Int? = null,
     val beginTime: String? = null,
     val endTime: String? = null,
-    val category: String? = null
+    val category: String? = null,
+    var isFavorite: Boolean = false
 )

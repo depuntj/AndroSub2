@@ -2,118 +2,65 @@ package com.example.androsubmis2.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.androsubmis2.DetailActivity
 import com.example.androsubmis2.R
 import com.example.androsubmis2.adapters.EventAdapter
 import com.example.androsubmis2.models.EventModel
+import com.example.androsubmis2.models.FavoriteEventEntity
 import com.example.androsubmis2.view.ViewEventModel
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.button.MaterialButton
+import com.example.androsubmis2.view.ViewFavoriteModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class EventFragment : Fragment() {
 
-    private lateinit var viewModel: ViewEventModel
+    private val viewModel: ViewEventModel by viewModel()
+    private val viewFavoriteModel: ViewFavoriteModel by viewModel()
+
     private lateinit var recyclerView: RecyclerView
     private lateinit var eventAdapter: EventAdapter
-    private lateinit var searchAdapter: EventAdapter
-    private lateinit var searchInput: TextInputEditText
-    private lateinit var searchButton: MaterialButton
-    private lateinit var errorMessageTextView: TextView
-    private var isActiveEvents: Boolean = true // Determine if searching active events
+    private var eventsList: MutableList<EventModel> = mutableListOf()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_event_list, container, false)
+
         recyclerView = view.findViewById(R.id.recyclerView)
         recyclerView.layoutManager = LinearLayoutManager(context)
 
-        searchInput = view.findViewById(R.id.search_input)
-        searchButton = view.findViewById(R.id.button_search)
-
-        errorMessageTextView = view.findViewById(R.id.empty_state_text)
-        viewModel = ViewModelProvider(this)[ViewEventModel::class.java]
-        observeEventLiveData()
-        setupSearch()
-        if (isActiveEvents) {
-            viewModel.fetchActiveEvents()
-        } else {
-            viewModel.fetchCompletedEvents()
-        }
+        setupObservers()
+        viewModel.fetchActiveEvents()
 
         return view
     }
-    private fun observeEventLiveData() {
-        if (isActiveEvents) {
-            // Observe active events
-            viewModel.activeEventsLiveData.observe(viewLifecycleOwner) { events ->
-                handleEventResults(events, "No active events found.")
-            }
-        } else {
-            viewModel.completedEventsLiveData.observe(viewLifecycleOwner) { events ->
-                handleEventResults(events, "No completed events found.")
-            }
-        }
-        viewModel.searchResultsLiveData.observe(viewLifecycleOwner) { searchResults ->
-            if (!searchResults.isNullOrEmpty()) {
-                errorMessageTextView.visibility = View.GONE
-                searchAdapter = EventAdapter(searchResults) { event -> onEventClicked(event) }
-                recyclerView.adapter = searchAdapter
+
+    private fun setupObservers() {
+        viewModel.activeEventsLiveData.observe(viewLifecycleOwner) { events ->
+            if (!events.isNullOrEmpty()) {
+                eventsList.clear()
+                eventsList.addAll(events)
+                setupAdapter(eventsList)
             } else {
-                showErrorMessage("Not found")
-            }
-        }
-        viewModel.errorMessageLiveData.observe(viewLifecycleOwner) { errorMessage ->
-            errorMessage?.let {
-                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                showErrorMessage("No active events found.")
             }
         }
     }
 
-    private fun handleEventResults(events: List<EventModel>?, emptyMessage: String) {
-        if (!events.isNullOrEmpty()) {
-            errorMessageTextView.visibility = View.GONE
-            eventAdapter = EventAdapter(events) { event -> onEventClicked(event) }
-            recyclerView.adapter = eventAdapter
-        } else {
-            showErrorMessage(emptyMessage)
-        }
-    }
-
-    private fun setupSearch() {
-        searchButton.setOnClickListener {
-            val query = searchInput.text.toString().trim()
-            if (query.isNotEmpty()) {
-                viewModel.searchEvents(query, isActiveEvents)
-            } else {
-                Toast.makeText(context, "Please enter a search query", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        searchInput.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_SEARCH || event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER) {
-                val query = searchInput.text.toString().trim()
-                if (query.isNotEmpty()) {
-                    viewModel.searchEvents(query, isActiveEvents)
-                    return@OnEditorActionListener true
-                } else {
-                    Toast.makeText(context, "Please enter a search query", Toast.LENGTH_SHORT).show()
-                }
-            }
-            false
+    private fun setupAdapter(events: List<EventModel>) {
+        eventAdapter = EventAdapter(events, { event ->
+            onEventClicked(event)
+        }, { event ->
+            onFavoriteClicked(event)
         })
+        recyclerView.adapter = eventAdapter
     }
 
     private fun onEventClicked(event: EventModel) {
@@ -123,9 +70,29 @@ class EventFragment : Fragment() {
         startActivity(intent)
     }
 
+    private fun onFavoriteClicked(event: EventModel) {
+        val favoriteEntity = FavoriteEventEntity(
+            id = event.id?.toString() ?: "0",
+            name = event.name ?: "Unknown Event",
+            mediaCover = event.imageLogo
+        )
+
+        if (!event.isFavorite) {
+            viewFavoriteModel.addFavorite(favoriteEntity)
+            Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT).show()
+        } else {
+            viewFavoriteModel.removeFavorite(favoriteEntity)
+            Toast.makeText(context, "Removed from favorites", Toast.LENGTH_SHORT).show()
+        }
+
+        event.isFavorite = !event.isFavorite
+        val eventIndex = eventsList.indexOf(event)
+        if (eventIndex >= 0) {
+            eventAdapter.notifyItemChanged(eventIndex)
+        }
+    }
+
     private fun showErrorMessage(message: String) {
-        recyclerView.visibility = View.GONE
-        errorMessageTextView.text = message
-        errorMessageTextView.visibility = View.VISIBLE
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 }

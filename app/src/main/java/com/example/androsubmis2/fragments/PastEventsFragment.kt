@@ -11,27 +11,32 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.androsubmis2.DetailActivity
 import com.example.androsubmis2.R
 import com.example.androsubmis2.adapters.EventAdapter
 import com.example.androsubmis2.models.EventModel
+import com.example.androsubmis2.models.FavoriteEventEntity
 import com.example.androsubmis2.view.ViewEventModel
+import com.example.androsubmis2.view.ViewFavoriteModel
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.button.MaterialButton
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class PastEventsFragment : Fragment() {
 
-    private lateinit var viewModel: ViewEventModel
+    private val viewModel: ViewEventModel by viewModel()
+    private val viewFavoriteModel: ViewFavoriteModel by viewModel()
+
     private lateinit var recyclerView: RecyclerView
     private lateinit var eventAdapter: EventAdapter
-    private lateinit var searchAdapter: EventAdapter
     private lateinit var searchInput: TextInputEditText
     private lateinit var searchButton: MaterialButton
     private lateinit var errorMessageTextView: TextView
     private lateinit var loadingIndicator: ProgressBar
+
+    private var eventList: MutableList<EventModel> = mutableListOf()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,54 +51,80 @@ class PastEventsFragment : Fragment() {
         errorMessageTextView = view.findViewById(R.id.empty_state_text)
         loadingIndicator = view.findViewById(R.id.loading_indicator)
 
-        viewModel = ViewModelProvider(this)[ViewEventModel::class.java]
+        setupObservers()
+        setupSearch()
+
+        viewModel.fetchCompletedEvents()
+
+        return view
+    }
+
+    private fun setupObservers() {
         loadingIndicator.visibility = View.VISIBLE
+
         viewModel.completedEventsLiveData.observe(viewLifecycleOwner) { events ->
             loadingIndicator.visibility = View.GONE
             if (!events.isNullOrEmpty()) {
                 errorMessageTextView.visibility = View.GONE
-                eventAdapter = EventAdapter(events) { event -> onEventClicked(event) }
-                recyclerView.adapter = eventAdapter
+                eventList = events.toMutableList()
+                setupAdapter(eventList)
             } else {
                 showErrorMessage("No completed events found.")
             }
         }
-        viewModel.searchResultsLiveData.observe(viewLifecycleOwner) { searchResults ->
-            if (!searchResults.isNullOrEmpty()) {
-                errorMessageTextView.visibility = View.GONE
-                searchAdapter = EventAdapter(searchResults) { event -> onEventClicked(event) }
-                recyclerView.adapter = searchAdapter
-            } else {
-                showErrorMessage("No search results found.")
+
+        viewModel.errorMessageLiveData.observe(viewLifecycleOwner) { errorMessage ->
+            errorMessage?.let {
+                showErrorMessage(it)
             }
         }
-        setupSearch()
-        viewModel.fetchCompletedEvents()
-        return view
     }
 
     private fun setupSearch() {
         searchButton.setOnClickListener {
             val query = searchInput.text.toString().trim()
             if (query.isNotEmpty()) {
-                viewModel.searchEvents(query, false)
+                filterCompletedEvents(query)
             } else {
                 Toast.makeText(context, "Please enter a search query", Toast.LENGTH_SHORT).show()
             }
         }
 
-        searchInput.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, event ->
+        searchInput.setOnEditorActionListener { _, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH || event?.action == KeyEvent.ACTION_DOWN && event.keyCode == KeyEvent.KEYCODE_ENTER) {
                 val query = searchInput.text.toString().trim()
                 if (query.isNotEmpty()) {
-                    viewModel.searchEvents(query, false)
-                    return@OnEditorActionListener true
+                    filterCompletedEvents(query)
+                    true
                 } else {
                     Toast.makeText(context, "Please enter a search query", Toast.LENGTH_SHORT).show()
+                    false
                 }
+            } else {
+                false
             }
-            false
+        }
+    }
+
+    private fun filterCompletedEvents(query: String) {
+        val filteredList = eventList.filter { event ->
+            event.name?.contains(query, ignoreCase = true) == true || event.beginTime?.contains(query, ignoreCase = true) == true
+        }
+
+        if (filteredList.isNotEmpty()) {
+            setupAdapter(filteredList)
+        } else {
+            showErrorMessage("No search results found.")
+        }
+    }
+
+    private fun setupAdapter(events: List<EventModel>) {
+        eventAdapter = EventAdapter(events, { event: EventModel ->
+            onEventClicked(event)
+        }, { event: EventModel ->
+            onFavoriteClicked(event)
         })
+        recyclerView.adapter = eventAdapter
     }
 
     private fun onEventClicked(event: EventModel) {
@@ -101,6 +132,26 @@ class PastEventsFragment : Fragment() {
             putExtra("event_id", event.id)
         }
         startActivity(intent)
+    }
+
+    private fun onFavoriteClicked(event: EventModel) {
+        val favoriteEntity = FavoriteEventEntity(
+            id = event.id.toString(),
+            name = event.name ?: "Unknown Event",
+            mediaCover = event.imageLogo
+        )
+
+        // Toggle favorite status
+        if (event.isFavorite) {
+            viewFavoriteModel.removeFavorite(favoriteEntity)
+            Toast.makeText(context, "Removed from favorites", Toast.LENGTH_SHORT).show()
+        } else {
+            viewFavoriteModel.addFavorite(favoriteEntity)
+            Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT).show()
+        }
+
+        event.isFavorite = !event.isFavorite
+        eventAdapter.notifyItemChanged(eventList.indexOf(event))
     }
 
     private fun showErrorMessage(message: String) {

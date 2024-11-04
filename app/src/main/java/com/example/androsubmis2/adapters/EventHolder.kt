@@ -12,12 +12,16 @@ import com.example.androsubmis2.databinding.ItemEventBinding
 import com.example.androsubmis2.models.EventModel
 
 class EventHolder(private val binding: ItemEventBinding) : RecyclerView.ViewHolder(binding.root) {
-    fun bind(event: EventModel, onClick: (EventModel) -> Unit) {
 
+    fun bind(
+        event: EventModel,
+        onClick: (EventModel) -> Unit,
+        onFavoriteClick: (EventModel) -> Unit
+    ) {
         binding.eventName.text = event.name ?: "Event Name"
         binding.eventTime.text = event.beginTime ?: "Event Time"
-
         binding.imageLoadingIndicator.visibility = android.view.View.VISIBLE
+
         Glide.with(binding.root.context)
             .load(event.imageLogo)
             .placeholder(R.drawable.ic_launcher_foreground)
@@ -45,6 +49,19 @@ class EventHolder(private val binding: ItemEventBinding) : RecyclerView.ViewHold
                 }
             })
             .into(binding.eventImage)
+
         binding.root.setOnClickListener { onClick(event) }
+
+        updateFavoriteIcon(event.isFavorite)
+
+        binding.favoriteButton.setOnClickListener {
+            onFavoriteClick(event)
+        }
+    }
+
+    private fun updateFavoriteIcon(isFavorite: Boolean) {
+        binding.favoriteButton.setImageResource(
+            if (isFavorite) R.drawable.ic_favorite else R.drawable.ic_favorite_border
+        )
     }
 }

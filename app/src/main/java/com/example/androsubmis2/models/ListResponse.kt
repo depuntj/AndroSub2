@@ -5,4 +5,3 @@ data class ListResponse(
 	val error: Boolean? = null,
 	val message: String? = null
 )
-

@@ -1,9 +1,16 @@
-<resources>
-    <!-- Base application theme. -->
-    <style name="Base.Theme.AndroSubmis2" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.AndroSubmis2" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your dark theme here -->
+        <item name="android:textColorPrimary">@color/textColorPrimary</item>
     </style>
-
-    <style name="Theme.AndroSubmis2" parent="Base.Theme.AndroSubmis2" />
+    <color name="textColorPrimary">#FFFFFF</color>
+    <color name="background_color">#121212</color>
+    <color name="text_color">#FFFFFF</color>
+    <color name="card_background_color">#1E1E1E</color>
+    <color name="favorite_icon_color">#FF4081</color>
+    <color name="colorPrimary">#BB86FC</color>
+    <color name="colorOnBackground">#FFFFFF</color>
+    <color name="input_outline">#444444</color>
+    <color name="button_background">#BB86FC</color>
+    <color name="button_text">#FFFFFF</color>
 </resources>
